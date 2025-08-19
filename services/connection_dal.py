@@ -1,5 +1,4 @@
-# import pydantic
-
+import uuid
 
 class SoliderCol:
     """_summary_
@@ -9,8 +8,8 @@ class SoliderCol:
         self.last_name = last_name
         self.phone_number = phone_number
         self.rank = rank
-        self.id = None
-    
+        self.id = uuid.uuid4()
+
     def return_solider(self)-> dict:
         return {
             "id": self.id,
@@ -19,4 +18,3 @@ class SoliderCol:
             "phone_number": self.phone_number,
             "rank": self.rank
         }
-
