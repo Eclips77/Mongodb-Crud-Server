@@ -30,11 +30,11 @@ async def create_document(document_data: DocumentInputModel):
     """
     try:
         document = Document(
-            # id= document_data.id
             first_name=document_data.first_name,
             last_name=document_data.last_name,
             phone_number=document_data.phone_number,
-            rank=document_data.rank
+            rank=document_data.rank,
+            doc_id=document_data.id
         )
         
         success = dal.create(document)
@@ -64,14 +64,27 @@ async def get_document(doc_id: str):
     """
     document = dal.read(doc_id)
     if document:
-        return document
+        return DocumentInputModel(
+            id=document.id,
+            first_name=document.first_name,
+            last_name=document.last_name,
+            phone_number=document.phone_number,
+            rank=document.rank
+        )
     else:
         raise HTTPException(status_code=404, detail="Document not found")
 
-@app.get("/items")
+@app.get("/items", response_model=list[DocumentInputModel])
 def get_items():
     try:
-        return dal.get_all()
+        documents = dal.get_all()
+        return [DocumentInputModel(
+            id=doc.id,
+            first_name=doc.first_name,
+            last_name=doc.last_name,
+            phone_number=doc.phone_number,
+            rank=doc.rank
+        ) for doc in documents]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
