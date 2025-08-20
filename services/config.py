@@ -1,0 +1,4 @@
+MONGODB_HOST = "localhost"
+MONGODB_PORT = 27017
+MONGODB_DATABASE = "documents_db"
+MONGODB_COLLECTION = "documents"
