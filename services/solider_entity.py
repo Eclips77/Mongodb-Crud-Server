@@ -31,7 +31,7 @@ class Document:
                 dict: Document as dictionary
             """
             return {
-                "_id": self.id,
+                "id": self.id,
                 "first_name": self.first_name,
                 "last_name": self.last_name,
                 "phone_number": self.phone_number,
@@ -54,5 +54,5 @@ class Document:
             last_name=data.get("last_name"),
             phone_number=data.get("phone_number"),
             rank=data.get("rank"),
-            doc_id=data.get("_id")
+            doc_id=data.get("id")
         )      
