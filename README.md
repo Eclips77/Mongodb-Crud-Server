@@ -25,7 +25,7 @@ This project provides a FastAPI-based web service that allows you to perform Cre
 
 1. Clone the repository:
 ```
-git clone <repository-url>
+git clone (https://github.com/Eclips77/Mongodb-Crud-Server.git)
 cd Mongodb-Crud-Server
 ```
 
