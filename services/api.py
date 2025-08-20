@@ -75,7 +75,6 @@ def get_items():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.put("/documents/{doc_id}", response_model=dict)
 async def update_document(doc_id: str, update_data: DocumentInputModel):
     """
