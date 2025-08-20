@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: mongo-api
-          image: docker.io/johnlenon003/mongo-api:latest
+          image: docker.io/johnlenon003/solider-api:v1.0
           imagePullPolicy: Always   
           ports:
             - containerPort: 8000
