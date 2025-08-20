@@ -1,4 +1,3 @@
-
 from typing import List, Optional
 from services.connection_dal import DatabaseConnection
 from services.solider_entity import Document
@@ -104,30 +103,6 @@ class DocumentDAL:
         except Exception as e:
             print(f"Error getting all documents: {e}")
             return []
-    
-    def main_operations(self, operation: str, **kwargs):
-        """
-        Main method to handle all CRUD operations
-        
-        Args:
-            operation (str): Operation type ('create', 'read', 'update', 'delete', 'get_all')
-            **kwargs: Operation-specific parameters
-            
-        Returns:
-            Operation result
-        """
-        operations = {
-            'create': lambda: self.create(kwargs.get('document')),
-            'read': lambda: self.read(kwargs.get('doc_id')),
-            'update': lambda: self.update(kwargs.get('doc_id'), kwargs.get('update_data')),
-            'delete': lambda: self.delete(kwargs.get('doc_id')),
-            'get_all': lambda: self.get_all()
-        }
-        
-        if operation in operations:
-            return operations[operation]()
-        else:
-            raise ValueError(f"Unknown operation: {operation}")
     
     def close_connection(self):
         """
