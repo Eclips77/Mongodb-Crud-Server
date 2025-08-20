@@ -7,27 +7,9 @@ from services.solider_entity import Document
 app = FastAPI(title="Document Management API", version="1.0.0")
 dal = DocumentDAL()
 
-class DocumentCreate(BaseModel):
+class DocumentInputModel(BaseModel):
     """
     Pydantic model for document creation
-    """
-    first_name: str
-    last_name: str
-    phone_number: str
-    rank: str
-
-class DocumentUpdate(BaseModel):
-    """
-    Pydantic model for document updates
-    """
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    phone_number: Optional[str] = None
-    rank: Optional[str] = None
-
-class DocumentResponse(BaseModel):
-    """
-    Pydantic model for document responses
     """
     id: str
     first_name: str
@@ -35,8 +17,8 @@ class DocumentResponse(BaseModel):
     phone_number: str
     rank: str
 
-@app.post("/documents/", response_model=DocumentResponse)
-async def create_document(document_data: DocumentCreate):
+@app.post("/documents/", response_model=DocumentInputModel)
+async def create_document(document_data: DocumentInputModel):
     """
     Create a new document
     
@@ -56,7 +38,7 @@ async def create_document(document_data: DocumentCreate):
         
         success = dal.create(document)
         if success:
-            return DocumentResponse(
+            return DocumentInputModel(
                 id=document.id,
                 first_name=document.first_name,
                 last_name=document.last_name,
@@ -68,7 +50,7 @@ async def create_document(document_data: DocumentCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/documents/{doc_id}", response_model=DocumentResponse)
+@app.get("/documents/{doc_id}", response_model=DocumentInputModel)
 async def get_document(doc_id: str):
     """
     Get a document by ID
@@ -81,7 +63,7 @@ async def get_document(doc_id: str):
     """
     document = dal.read(doc_id)
     if document:
-        return DocumentResponse(
+        return DocumentInputModel(
             id=document.id,
             first_name=document.first_name,
             last_name=document.last_name,
@@ -91,7 +73,7 @@ async def get_document(doc_id: str):
     else:
         raise HTTPException(status_code=404, detail="Document not found")
 
-@app.get("/documents/", response_model=List[DocumentResponse])
+@app.get("/documents/", response_model=List[DocumentInputModel])
 async def get_all_documents():
     """
     Get all documents
@@ -101,7 +83,7 @@ async def get_all_documents():
     """
     documents = dal.get_all()
     return [
-        DocumentResponse(
+        DocumentInputModel(
             id=doc.id,
             first_name=doc.first_name,
             last_name=doc.last_name,
@@ -111,7 +93,7 @@ async def get_all_documents():
     ]
 
 @app.put("/documents/{doc_id}", response_model=dict)
-async def update_document(doc_id: str, update_data: DocumentUpdate):
+async def update_document(doc_id: str, update_data: DocumentInputModel):
     """
     Update a document by ID
     
