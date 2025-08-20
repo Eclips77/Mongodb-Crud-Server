@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-api
+  template:
+    metadata:
+      labels:
+        app: mongo-api
+    spec:
+      containers:
+        - name: mongo-api
+          image: docker.io/johnlenon003/mongo-api:latest
+          imagePullPolicy: Always   
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MONGO_URI
+              value: "mongodb://mongo:27017"
+            - name: MONGO_DB_NAME
+              value: "my_database"
+            - name: API_HOST
+              value: "0.0.0.0"
+            - name: API_PORT
+              value: "8000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-api
+spec:
+  selector:
+    app: mongo-api
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: ClusterIP
