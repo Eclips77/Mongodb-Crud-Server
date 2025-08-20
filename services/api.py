@@ -1,7 +1,6 @@
-from tkinter import N
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 from services.dal import DocumentDAL
 from services.solider_entity import Document
 
