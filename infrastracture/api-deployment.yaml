@@ -21,7 +21,7 @@ spec:
           env:
             - name: MONGO_URI
               value: "mongodb://mongo:27017"
-            - name: MONGO_DB_NAME
+            - name: MONGODB_DATABASE
               value: "soliders_db"
             - name: API_HOST
               value: "0.0.0.0"
