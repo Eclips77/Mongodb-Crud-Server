@@ -98,8 +98,8 @@ class DocumentDAL:
             List[Document]: List of all documents
         """
         try:
-            results = self.collection.find()
-            return [Document.from_dict(doc) for doc in results]
+            results = self.collection.find({},{"_id":0})
+            return [doc for doc in results]
         except Exception as e:
             print(f"Error getting all documents: {e}")
             return []

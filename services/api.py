@@ -1,3 +1,4 @@
+from tkinter import N
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
@@ -11,11 +12,11 @@ class DocumentInputModel(BaseModel):
     """
     Pydantic model for document creation
     """
-    id: str
-    first_name: str
-    last_name: str
-    phone_number: str
-    rank: str
+    id: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    rank: Optional[str] = None
 
 @app.post("/documents/", response_model=DocumentInputModel)
 async def create_document(document_data: DocumentInputModel):
@@ -30,6 +31,7 @@ async def create_document(document_data: DocumentInputModel):
     """
     try:
         document = Document(
+            # id= document_data.id
             first_name=document_data.first_name,
             last_name=document_data.last_name,
             phone_number=document_data.phone_number,
@@ -63,34 +65,17 @@ async def get_document(doc_id: str):
     """
     document = dal.read(doc_id)
     if document:
-        return DocumentInputModel(
-            id=document.id,
-            first_name=document.first_name,
-            last_name=document.last_name,
-            phone_number=document.phone_number,
-            rank=document.rank
-        )
+        return document
     else:
         raise HTTPException(status_code=404, detail="Document not found")
 
-@app.get("/documents/", response_model=List[DocumentInputModel])
-async def get_all_documents():
-    """
-    Get all documents
-    
-    Returns:
-        List[DocumentResponse]: List of all documents
-    """
-    documents = dal.get_all()
-    return [
-        DocumentInputModel(
-            id=doc.id,
-            first_name=doc.first_name,
-            last_name=doc.last_name,
-            phone_number=doc.phone_number,
-            rank=doc.rank
-        ) for doc in documents
-    ]
+@app.get("/items")
+def get_items():
+    try:
+        return dal.get_all()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.put("/documents/{doc_id}", response_model=dict)
 async def update_document(doc_id: str, update_data: DocumentInputModel):
