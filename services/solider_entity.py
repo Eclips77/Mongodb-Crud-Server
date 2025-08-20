@@ -6,7 +6,7 @@ class Document:
     Document class representing a document with personal information
     """
     
-    def __init__(self, first_name: Optional[str] =  None, last_name: Optional[str] =  None, phone_number: Optional[str] =  None, rank: Optional[str] =  None, doc_id: Optional[str] = None):
+    def __init__(self, first_name: Optional[str] = None, last_name: Optional[str] = None, phone_number: Optional[str] = None, rank: Optional[str] = None, doc_id: Optional[str] = None):
         """
         Initialize a new Document instance
         
@@ -31,7 +31,7 @@ class Document:
                 dict: Document as dictionary
             """
             return {
-                "_id": self.id,
+                "id": self.id,
                 "first_name": self.first_name,
                 "last_name": self.last_name,
                 "phone_number": self.phone_number,
@@ -54,5 +54,5 @@ class Document:
             last_name=data.get("last_name"),
             phone_number=data.get("phone_number"),
             rank=data.get("rank"),
-            doc_id=data.get("_id")
+            doc_id=data.get("id")
         )      

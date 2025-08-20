@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soldier-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: soldier-api
+  template:
+    metadata:
+      labels:
+        app: soldier-api
+    spec:
+      containers:
+        - name: soldier-api
+          image: docker.io/johnlenon003/solider-api:v1.0
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MONGODB_URI
+              value: "mongodb://mongo:27017/soliders_db"
+            - name: MONGODB_DATABASE
+              value: "soliders_db"
+            - name: MONGODB_COLLECTION
+              value: "soliders"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: soldier-api
+spec:
+  selector:
+    app: soldier-api
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: ClusterIP

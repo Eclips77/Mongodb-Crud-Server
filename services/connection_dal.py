@@ -22,8 +22,10 @@ class DatabaseConnection:
             Database: MongoDB database instance
         """
         try:
-            self.client = MongoClient(config.MONGODB_HOST, config.MONGODB_PORT)
+            self.client = MongoClient(config.MONGODB_URI)
             self.database = self.client[config.MONGODB_DATABASE]
+            # Test the connection
+            self.client.admin.command('ping')
             return self.database
         except Exception as e:
             raise ConnectionError(f"Failed to connect to MongoDB: {e}")
