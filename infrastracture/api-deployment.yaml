@@ -1,39 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo-api
+  name: soldier-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mongo-api
+      app: soldier-api
   template:
     metadata:
       labels:
-        app: mongo-api
+        app: soldier-api
     spec:
       containers:
-        - name: mongo-api
-          image: docker.io/johnlenon003/solider-api:v1.0
-          imagePullPolicy: Always   
+        - name: soldier-api
+          image: johnlenon003/solider-api:v1.0
           ports:
             - containerPort: 8000
           env:
-            - name: MONGO_URI
-              value: "mongodb://mongo:27017"
+            - name: MONGODB_URI
+              value: "mongodb://mongo:27017/soliders_db"
             - name: MONGODB_DATABASE
               value: "soliders_db"
             - name: MONGODB_COLLECTION
               value: "soliders"
-           
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo-api
+  name: soldier-api
 spec:
   selector:
-    app: mongo-api
+    app: soldier-api
   ports:
     - port: 8000
       targetPort: 8000
