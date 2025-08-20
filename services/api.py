@@ -1,3 +1,4 @@
+from unittest import result
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -100,13 +101,8 @@ async def update_document(doc_id: str, update_data: DocumentInputModel):
     Returns:
         dict: Success message
     """
-    update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
-    
-    if not update_dict:
-        raise HTTPException(status_code=400, detail="No data provided for update")
-    
-    success = dal.update(doc_id, update_dict)
-    if success:
+    result = dal.update(doc_id,update_data.model_dump(exclude_none=True))
+    if  result:
         return {"message": "Document updated successfully"}
     else:
         raise HTTPException(status_code=404, detail="Document not found or update failed")

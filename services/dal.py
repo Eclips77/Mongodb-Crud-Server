@@ -44,7 +44,7 @@ class DocumentDAL:
             Optional[Document]: Document if found, None otherwise
         """
         try:
-            result = self.collection.find_one({"_id": doc_id})
+            result = self.collection.find_one({"id": doc_id})
             if result:
                 return Document.from_dict(result)
             return None
@@ -65,7 +65,7 @@ class DocumentDAL:
         """
         try:
             result = self.collection.update_one(
-                {"_id": doc_id},
+                {"id": doc_id},
                 {"$set": update_data}
             )
             return result.modified_count > 0
@@ -84,7 +84,7 @@ class DocumentDAL:
             bool: True if successful, False otherwise
         """
         try:
-            result = self.collection.delete_one({"_id": doc_id})
+            result = self.collection.delete_one({"id": doc_id})
             return result.deleted_count > 0
         except Exception as e:
             print(f"Error deleting document: {e}")
