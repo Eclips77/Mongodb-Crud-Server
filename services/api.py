@@ -1,129 +1,90 @@
-from tkinter import N
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List, Optional
-from services.dal import DocumentDAL
-from services.solider_entity import Document
+from flask import Flask, request, jsonify
+from services.dal import SoldierDAL
+from services.solider_entity import Soldier
 
-app = FastAPI(title="Document Management API", version="1.0.0")
-dal = DocumentDAL()
+app = Flask(__name__)
+soldier_dal = SoldierDAL()
 
-class DocumentInputModel(BaseModel):
-    """
-    Pydantic model for document creation
-    """
-    id: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    phone_number: Optional[str] = None
-    rank: Optional[str] = None
-
-@app.post("/documents/", response_model=DocumentInputModel)
-async def create_document(document_data: DocumentInputModel):
-    """
-    Create a new document
-    
-    Args:
-        document_data (DocumentCreate): Document data to create
-        
-    Returns:
-        DocumentResponse: Created document
-    """
+@app.route('/soldiers', methods=['POST'])
+def create_soldier():
+    """Create new soldier"""
     try:
-        document = Document(
-            # id= document_data.id
-            first_name=document_data.first_name,
-            last_name=document_data.last_name,
-            phone_number=document_data.phone_number,
-            rank=document_data.rank
+        data = request.get_json()
+        
+        if not data.get('first_name') or not data.get('last_name'):
+            return jsonify({"error": "First name and last name are required"}), 400
+        
+        soldier = Soldier(
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            phone_number=data.get('phone_number'),
+            rank=data.get('rank')
         )
         
-        success = dal.create(document)
-        if success:
-            return DocumentInputModel(
-                id=document.id,
-                first_name=document.first_name,
-                last_name=document.last_name,
-                phone_number=document.phone_number,
-                rank=document.rank
-            )
-        else:
-            raise HTTPException(status_code=500, detail="Failed to create document")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/documents/{doc_id}", response_model=DocumentInputModel)
-async def get_document(doc_id: str):
-    """
-    Get a document by ID
-    
-    Args:
-        doc_id (str): Document ID
+        soldier_id = soldier_dal.create(soldier)
+        return jsonify({"message": "Soldier created successfully", "id": soldier_id}), 201
         
-    Returns:
-        DocumentResponse: Found document
-    """
-    document = dal.read(doc_id)
-    if document:
-        return document
-    else:
-        raise HTTPException(status_code=404, detail="Document not found")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.get("/items")
-def get_items():
+@app.route('/soldiers/<soldier_id>', methods=['GET'])
+def get_soldier(soldier_id):
+    """Get soldier by ID"""
     try:
-        return dal.get_all()
+        soldier = soldier_dal.get_by_id(soldier_id)
+        if soldier:
+            return jsonify(soldier.to_dict()), 200
+        return jsonify({"error": "Soldier not found"}), 404
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return jsonify({"error": str(e)}), 500
 
-
-@app.put("/documents/{doc_id}", response_model=dict)
-async def update_document(doc_id: str, update_data: DocumentInputModel):
-    """
-    Update a document by ID
-    
-    Args:
-        doc_id (str): Document ID
-        update_data (DocumentUpdate): Data to update
+@app.route('/soldiers', methods=['GET'])
+def get_all_soldiers():
+    """Get all soldiers"""
+    try:
+        soldiers = soldier_dal.get_all()
+        return jsonify([soldier.to_dict() for soldier in soldiers]), 200
         
-    Returns:
-        dict: Success message
-    """
-    update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
-    
-    if not update_dict:
-        raise HTTPException(status_code=400, detail="No data provided for update")
-    
-    success = dal.update(doc_id, update_dict)
-    if success:
-        return {"message": "Document updated successfully"}
-    else:
-        raise HTTPException(status_code=404, detail="Document not found or update failed")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.delete("/documents/{doc_id}", response_model=dict)
-async def delete_document(doc_id: str):
-    """
-    Delete a document by ID
-    
-    Args:
-        doc_id (str): Document ID
+@app.route('/soldiers/<soldier_id>', methods=['PUT'])
+def update_soldier(soldier_id):
+    """Update soldier"""
+    try:
+        data = request.get_json()
         
-    Returns:
-        dict: Success message
-    """
-    success = dal.delete(doc_id)
-    if success:
-        return {"message": "Document deleted successfully"}
-    else:
-        raise HTTPException(status_code=404, detail="Document not found")
+        existing_soldier = soldier_dal.get_by_id(soldier_id)
+        if not existing_soldier:
+            return jsonify({"error": "Soldier not found"}), 404
+        
+        success = soldier_dal.update(soldier_id, data)
+        if success:
+            return jsonify({"message": "Soldier updated successfully"}), 200
+        return jsonify({"error": "Failed to update soldier"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """
-    Close database connection on shutdown
-    """
-    dal.close_connection()
+@app.route('/soldiers/<soldier_id>', methods=['DELETE'])
+def delete_soldier(soldier_id):
+    """Delete soldier"""
+    try:
+        success = soldier_dal.delete(soldier_id)
+        if success:
+            return jsonify({"message": "Soldier deleted successfully"}), 200
+        return jsonify({"error": "Soldier not found"}), 404
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({"status": "OK", "message": "Server is running"}), 200
+
+if __name__ == '__main__':
+
+    app.run(debug=True, host='0.0.0.0', port=5000)

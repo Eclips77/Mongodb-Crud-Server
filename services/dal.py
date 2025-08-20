@@ -1,111 +1,154 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from pymongo.collection import Collection
 from services.connection_dal import DatabaseConnection
-from services.solider_entity import Document
+from services.solider_entity import Soldier
 from services import config
 
-class DocumentDAL:
+class SoldierDAL:
     """
-    Data Access Layer for Document CRUD operations
+    Data Access Layer for Soldier entity - פשוט ויעיל
     """
     
     def __init__(self):
-        """
-        Initialize DAL with database connection
-        """
+        """Initialize DAL with database connection"""
         self.db_connection = DatabaseConnection()
-        self.database = self.db_connection.connect()
-        self.collection = self.database[config.MONGODB_COLLECTION]
-    
-    def create(self, document: Document) -> bool:
+        self.db = self.db_connection.connect()
+        self.collection: Collection = self.db[config.MONGODB_COLLECTION]
+
+    def create(self, soldier: Soldier) -> str:
         """
-        Create a new document in the database
+        Create new soldier - יצירת חייל חדש
         
         Args:
-            document (Document): Document to create
+            soldier (Soldier): Soldier object to create
             
         Returns:
-            bool: True if successful, False otherwise
+            str: ID of created soldier
         """
         try:
-            result = self.collection.insert_one(document.to_dict())
-            return result.acknowledged
+            soldier_dict = soldier.to_dict()
+            result = self.collection.insert_one(soldier_dict)
+            return str(result.inserted_id)
         except Exception as e:
-            print(f"Error creating document: {e}")
-            return False
-    
-    def read(self, doc_id: str) -> Optional[Document]:
+            raise Exception(f"Failed to create soldier: {e}")
+
+    def get_by_id(self, soldier_id: str) -> Optional[Soldier]:
         """
-        Read a document by ID
+        Get soldier by ID - קבלת חייל לפי מזהה
         
         Args:
-            doc_id (str): Document ID to search for
+            soldier_id (str): Soldier ID
             
         Returns:
-            Optional[Document]: Document if found, None otherwise
+            Optional[Soldier]: Soldier object or None
         """
         try:
-            result = self.collection.find_one({"_id": doc_id})
+            result = self.collection.find_one({"_id": soldier_id})
             if result:
-                return Document.from_dict(result)
+                return Soldier.from_dict(result)
             return None
         except Exception as e:
-            print(f"Error reading document: {e}")
-            return None
-    
-    def update(self, doc_id: str, update_data: dict) -> bool:
+            raise Exception(f"Failed to get soldier: {e}")
+
+    def get_all(self) -> List[Soldier]:
         """
-        Update a document by ID
+        Get all soldiers - קבלת כל החיילים
         
-        Args:
-            doc_id (str): Document ID to update
-            update_data (dict): Data to update
-            
         Returns:
-            bool: True if successful, False otherwise
+            List[Soldier]: List of all soldiers
         """
         try:
+            results = self.collection.find()
+            return [Soldier.from_dict(doc) for doc in results]
+        except Exception as e:
+            raise Exception(f"Failed to get soldiers: {e}")
+
+    def update(self, soldier_id: str, update_data: Dict[str, Any]) -> bool:
+        """
+        Update soldier - עדכון חייל
+        
+        Args:
+            soldier_id (str): Soldier ID
+            update_data (Dict): Data to update
+            
+        Returns:
+            bool: True if updated successfully
+        """
+        try:
+            # Remove _id from update data if exists
+            update_data.pop("_id", None)
+            
             result = self.collection.update_one(
-                {"_id": doc_id},
+                {"_id": soldier_id},
                 {"$set": update_data}
             )
             return result.modified_count > 0
         except Exception as e:
-            print(f"Error updating document: {e}")
-            return False
-    
-    def delete(self, doc_id: str) -> bool:
+            raise Exception(f"Failed to update soldier: {e}")
+
+    def delete(self, soldier_id: str) -> bool:
         """
-        Delete a document by ID
+        Delete soldier - מחיקת חייל
         
         Args:
-            doc_id (str): Document ID to delete
+            soldier_id (str): Soldier ID
             
         Returns:
-            bool: True if successful, False otherwise
+            bool: True if deleted successfully
         """
         try:
-            result = self.collection.delete_one({"_id": doc_id})
+            result = self.collection.delete_one({"_id": soldier_id})
             return result.deleted_count > 0
         except Exception as e:
-            print(f"Error deleting document: {e}")
-            return False
-    
-    def get_all(self) -> List[Document]:
+            raise Exception(f"Failed to delete soldier: {e}")
+
+    def search_by_name(self, name: str) -> List[Soldier]:
         """
-        Get all documents from the database
+        Search soldiers by name - חיפוש חיילים לפי שם
         
+        Args:
+            name (str): Name to search for
+            
         Returns:
-            List[Document]: List of all documents
+            List[Soldier]: List of matching soldiers
         """
         try:
-            results = self.collection.find({},{"_id":0})
-            return [doc for doc in results]
+            # Search in both first_name and last_name
+            query = {
+                "$or": [
+                    {"first_name": {"$regex": name, "$options": "i"}},
+                    {"last_name": {"$regex": name, "$options": "i"}}
+                ]
+            }
+            results = self.collection.find(query)
+            return [Soldier.from_dict(doc) for doc in results]
         except Exception as e:
-            print(f"Error getting all documents: {e}")
-            return []
-    
-    def close_connection(self):
+            raise Exception(f"Failed to search soldiers: {e}")
+
+    def get_by_rank(self, rank: str) -> List[Soldier]:
         """
-        Close database connection
+        Get soldiers by rank - קבלת חיילים לפי דרגה
+        
+        Args:
+            rank (str): Rank to filter by
+            
+        Returns:
+            List[Soldier]: List of soldiers with specified rank
         """
-        self.db_connection.disconnect()
+        try:
+            results = self.collection.find({"rank": rank})
+            return [Soldier.from_dict(doc) for doc in results]
+        except Exception as e:
+            raise Exception(f"Failed to get soldiers by rank: {e}")
+
+    def count(self) -> int:
+        """
+        Count total soldiers - ספירת חיילים
+        
+        Returns:
+            int: Total number of soldiers
+        """
+        try:
+            return self.collection.count_documents({})
+        except Exception as e:
+            raise Exception(f"Failed to count soldiers: {e}")

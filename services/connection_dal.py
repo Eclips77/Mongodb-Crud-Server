@@ -34,3 +34,21 @@ class DatabaseConnection:
         """
         if self.client:
             self.client.close()
+    
+    def test_connection(self) -> bool:
+        """
+        Test database connection
+        
+        Returns:
+            bool: True if connection is successful
+        """
+        try:
+            if self.database is None:
+                self.connect()
+            # Test connection by pinging the database
+            if self.database is not None:
+                self.database.command('ping')
+                return True
+            return False
+        except Exception:
+            return False
