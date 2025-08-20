@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: soldier-api
-          image: johnlenon003/solider-api:v1.0
+          image: docker.io/johnlenon003/solider-api:v1.0
           ports:
             - containerPort: 8000
           env:
