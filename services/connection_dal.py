@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from pymongo.database import Database
-import config
+from services import config
 
 class DatabaseConnection:
     """

@@ -1,7 +1,7 @@
 from typing import List, Optional
 from services.connection_dal import DatabaseConnection
 from services.solider_entity import Document
-import config
+from services import config
 
 class DocumentDAL:
     """
